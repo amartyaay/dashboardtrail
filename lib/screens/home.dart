@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:dashboardtrail/core/providers/shared_pref.dart';
+import 'package:dashboardtrail/screens/check_requests.dart';
 import 'package:dashboardtrail/screens/settings.dart';
+import 'package:dashboardtrail/widgets/grid_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -18,37 +22,52 @@ class HomePage extends HookConsumerWidget {
           data: (columns) {
             return rowsAsyncValue.when(
               data: (rows) {
-                if (name != null && name.isNotEmpty) {
-                  return Scaffold(
-                    appBar: AppBar(
-                      centerTitle: true,
-                      title: Text(name),
-                      actions: <Widget>[
-                        IconButton(
-                          icon: const Icon(Icons.settings),
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                            );
-                          },
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            // Handle Requests button functionality here
-                          },
-                          child: const Text(
-                            'Requests',
-                            style: TextStyle(color: Colors.white),
+                return ref.watch(storedMaterialProvider).when(data: (storedMaterial) {
+                  log('printing stored material list -> $storedMaterial');
+                  if (name != null && name.isNotEmpty) {
+                    return Scaffold(
+                      appBar: AppBar(
+                        centerTitle: true,
+                        title: Text(name),
+                        actions: <Widget>[
+                          IconButton(
+                            icon: const Icon(Icons.settings),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                              );
+                            },
                           ),
-                        ),
-                      ],
-                    ),
-                    body: ScrollableGridWidget(columns ?? 5, rows ?? 5),
-                  );
-                } else {
-                  // Redirect to the settings page if the name is absent or null.
-                  return const SettingsScreen();
-                }
+                          Padding(
+                              padding: EdgeInsets.only(
+                            left: MediaQuery.of(context).size.width / 30,
+                          )),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const RequestsScreen(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Requests',
+                              style: TextStyle(color: Colors.black),
+                            ),
+                          ),
+                        ],
+                      ),
+                      body: ScrollableGridWidget(columns ?? 5, rows ?? 5, storedMaterial),
+                    );
+                  } else {
+                    // Redirect to the settings page if the name is absent or null.
+                    return const SettingsScreen();
+                  }
+                }, error: (error, stackTrace) {
+                  return Center(child: Text(error.toString()));
+                }, loading: () {
+                  return const Center(child: CircularProgressIndicator());
+                });
               },
               loading: () {
                 return const Center(child: CircularProgressIndicator());
@@ -72,39 +91,6 @@ class HomePage extends HookConsumerWidget {
       error: (error, stackTrace) {
         return const Center(child: Text('An error occurred'));
       },
-    );
-  }
-}
-
-class ScrollableGridWidget extends StatelessWidget {
-  final int columns;
-  final int rows;
-
-  const ScrollableGridWidget(this.columns, this.rows, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: columns,
-        ),
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.all(4),
-            color: Colors.blue,
-            child: Center(
-              child: Text(
-                'Item $index',
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-          );
-        },
-        itemCount: columns * rows,
-        shrinkWrap: true, // This allows the GridView to adapt to its content's size
-        physics: const ClampingScrollPhysics(), // Optional, prevents over-scrolling
-      ),
     );
   }
 }

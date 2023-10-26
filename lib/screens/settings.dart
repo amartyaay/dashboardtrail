@@ -1,3 +1,7 @@
+// ignore_for_file: unused_result
+
+import 'package:dashboardtrail/core/providers/shared_pref.dart';
+import 'package:dashboardtrail/widgets/settings_page_rows.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -11,83 +15,109 @@ class SettingsScreen extends HookConsumerWidget {
     final nameController = useTextEditingController();
     final columnsController = useTextEditingController();
     final rowsController = useTextEditingController();
+    final nameAsyncValue = ref.watch(nameProvider);
+    final columnsAsyncValue = ref.watch(columnsProvider);
+    final rowsAsyncValue = ref.watch(rowsProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          customRow(nameController, 'Name', Icons.person),
-          customRow(columnsController, 'Columns', Icons.view_column),
-          customRow(rowsController, 'Rows', Icons.view_list),
-          ElevatedButton(
-            onPressed: () {
-              final errors = saveSettingsToSharedPreferences(
-                nameController.text,
-                columnsController.text,
-                rowsController.text,
-              );
+    return nameAsyncValue.when(
+        data: (name) {
+          return columnsAsyncValue.when(
+              data: (columns) {
+                return rowsAsyncValue.when(
+                    data: (rows) {
+                      return Scaffold(
+                        appBar: AppBar(
+                          title: const Text('Settings'),
+                          centerTitle: true,
+                        ),
+                        body: Column(
+                          children: [
+                            customRow(
+                              controller: nameController,
+                              hintText: 'Name',
+                              icon: Icons.person,
+                              intialValue: name,
+                            ),
+                            customRow(
+                              controller: columnsController,
+                              hintText: 'Columns',
+                              icon: Icons.view_column,
+                              intialValue: columns.toString(),
+                            ),
+                            customRow(
+                              controller: rowsController,
+                              hintText: 'Rows',
+                              icon: Icons.view_list,
+                              intialValue: rows.toString(),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final errors = await saveSettingsToSharedPreferences(
+                                  nameController.text,
+                                  columnsController.text,
+                                  rowsController.text,
+                                );
 
-              if (errors.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Settings Saved'),
+                                if (errors.isEmpty) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Settings Saved'),
+                                      ),
+                                    );
+                                  }
+                                  ref.refresh(nameProvider);
+                                  ref.refresh(columnsProvider);
+                                  ref.refresh(rowsProvider);
+                                  ref.refresh(storedMaterialProvider);
+                                  if (context.mounted) {
+                                    Navigator.of(context).pop();
+                                  }
+                                } else {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(errors.join('\n')),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              child: const Text('Save'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    error: (error, stackTrace) => Center(
+                          child: Text(error.toString()),
+                        ),
+                    loading: () {
+                      return const Center(child: CircularProgressIndicator());
+                    });
+              },
+              error: (error, stackTrace) => Center(
+                    child: Text(error.toString()),
                   ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(errors.join('\n')),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
+              loading: () {
+                return const Center(child: CircularProgressIndicator());
+              });
+        },
+        error: (error, stackTrace) => Center(
+              child: Text(error.toString()),
+            ),
+        loading: () {
+          return const Center(child: CircularProgressIndicator());
+        });
   }
 }
 
-Widget customRow(TextEditingController controller, String hintText, IconData icon) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-    child: Row(
-      children: [
-        Icon(icon, color: Colors.blue),
-        const SizedBox(width: 16.0),
-        Text(
-          hintText,
-          style: const TextStyle(fontSize: 16, color: Colors.black),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: hintText,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-List<String> saveSettingsToSharedPreferences(String name, String columns, String rows) {
+Future<List<String>> saveSettingsToSharedPreferences(
+  String name,
+  String columns,
+  String rows,
+) async {
   final errors = <String>[];
 
   // Validate and save Name
@@ -110,7 +140,11 @@ List<String> saveSettingsToSharedPreferences(String name, String columns, String
   } else {
     errors.add('Rows must be a valid integer');
   }
-
+  if (errors.isEmpty) {
+    final pref = await SharedPreferences.getInstance();
+    List<String> dummy = List.filled(int.parse(rows) * int.parse(columns), '{}');
+    await pref.setStringList('storedMaterial', dummy);
+  }
   return errors;
 }
 

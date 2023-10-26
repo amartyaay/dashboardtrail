@@ -20,3 +20,8 @@ final rowsProvider = FutureProvider<int?>((ref) async {
   final prefs = await ref.watch(sharedPreferencesProvider.future);
   return prefs.getInt('rows');
 });
+
+final storedMaterialProvider = FutureProvider<List<String>?>((ref) async {
+  final prefs = await ref.watch(sharedPreferencesProvider.future);
+  return prefs.getStringList('storedMaterial');
+});

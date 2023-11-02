@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:dashboardtrail/core/providers/shared_pref.dart';
 import 'package:dashboardtrail/screens/check_requests.dart';
 import 'package:dashboardtrail/screens/settings.dart';
-import 'package:dashboardtrail/widgets/grid_widget.dart';
+import 'package:dashboardtrail/widgets/scrollabel_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -57,7 +57,7 @@ class HomePage extends HookConsumerWidget {
                           ),
                         ],
                       ),
-                      body: ScrollableGridWidget(columns ?? 5, rows ?? 5, storedMaterial),
+                      body: ScrollableGridWidget(name, columns ?? 5, rows ?? 5, storedMaterial),
                     );
                   } else {
                     // Redirect to the settings page if the name is absent or null.
@@ -81,7 +81,7 @@ class HomePage extends HookConsumerWidget {
             return const Center(child: CircularProgressIndicator());
           },
           error: (error, stackTrace) {
-            return const Center(child: Text('An error occurred'));
+            return Center(child: Text(error.toString()));
           },
         );
       },
@@ -89,7 +89,7 @@ class HomePage extends HookConsumerWidget {
         return const Center(child: CircularProgressIndicator());
       },
       error: (error, stackTrace) {
-        return const Center(child: Text('An error occurred'));
+        return Center(child: Text(error.toString()));
       },
     );
   }

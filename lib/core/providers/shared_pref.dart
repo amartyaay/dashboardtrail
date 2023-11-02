@@ -25,3 +25,7 @@ final storedMaterialProvider = FutureProvider<List<String>?>((ref) async {
   final prefs = await ref.watch(sharedPreferencesProvider.future);
   return prefs.getStringList('storedMaterial');
 });
+final xlPathProviderProvider = FutureProvider<String?>((ref) async {
+  final prefs = await ref.watch(sharedPreferencesProvider.future);
+  return prefs.getString('xlPath');
+});

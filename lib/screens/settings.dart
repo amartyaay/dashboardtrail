@@ -15,9 +15,11 @@ class SettingsScreen extends HookConsumerWidget {
     final nameController = useTextEditingController();
     final columnsController = useTextEditingController();
     final rowsController = useTextEditingController();
+    final pathController = useTextEditingController();
     final nameAsyncValue = ref.watch(nameProvider);
     final columnsAsyncValue = ref.watch(columnsProvider);
     final rowsAsyncValue = ref.watch(rowsProvider);
+    final pathAsyncvalue = ref.watch(xlPathProviderProvider);
 
     return nameAsyncValue.when(
         data: (name) {
@@ -25,6 +27,8 @@ class SettingsScreen extends HookConsumerWidget {
               data: (columns) {
                 return rowsAsyncValue.when(
                     data: (rows) {
+                      String path = '';
+                      pathAsyncvalue.whenData((value) => path = value ?? '');
                       return Scaffold(
                         appBar: AppBar(
                           title: const Text('Settings'),
@@ -50,12 +54,19 @@ class SettingsScreen extends HookConsumerWidget {
                               icon: Icons.view_list,
                               intialValue: rows.toString(),
                             ),
+                            customRow(
+                              controller: pathController,
+                              hintText: 'Excel File Path',
+                              icon: Icons.file_open,
+                              intialValue: path,
+                            ),
                             ElevatedButton(
                               onPressed: () async {
                                 final errors = await saveSettingsToSharedPreferences(
                                   nameController.text,
                                   columnsController.text,
                                   rowsController.text,
+                                  pathController.text,
                                 );
 
                                 if (errors.isEmpty) {
@@ -117,6 +128,7 @@ Future<List<String>> saveSettingsToSharedPreferences(
   String name,
   String columns,
   String rows,
+  String path,
 ) async {
   final errors = <String>[];
 
@@ -125,6 +137,11 @@ Future<List<String>> saveSettingsToSharedPreferences(
     errors.add('Name cannot be empty');
   } else {
     saveToSharedPreferences('name', name, 'String');
+  }
+  if (path.trim().isEmpty) {
+    errors.add('Path cannot be empty');
+  } else {
+    saveToSharedPreferences('xlPath', path, 'String');
   }
 
   // Validate and save Columns

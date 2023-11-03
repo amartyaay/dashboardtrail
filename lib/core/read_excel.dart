@@ -1,9 +1,12 @@
 import 'dart:io';
 
 import 'package:excel/excel.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-Future<List<Map<String, dynamic>>?> readExcelFile(String path) async {
+Future<List<Map<String, dynamic>>?> readExcelFile() async {
   // Open the Excel file from the specified path
+  final prefs = await SharedPreferences.getInstance();
+  final path = prefs.getString('xlPath') ?? '';
   final file = File(path);
 
   if (!file.existsSync()) {

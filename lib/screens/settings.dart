@@ -27,79 +27,86 @@ class SettingsScreen extends HookConsumerWidget {
               data: (columns) {
                 return rowsAsyncValue.when(
                     data: (rows) {
-                      String path = '';
-                      pathAsyncvalue.whenData((value) => path = value ?? '');
-                      return Scaffold(
-                        appBar: AppBar(
-                          title: const Text('Settings'),
-                          centerTitle: true,
-                        ),
-                        body: Column(
-                          children: [
-                            customRow(
-                              controller: nameController,
-                              hintText: 'Name',
-                              icon: Icons.person,
-                              intialValue: name,
-                            ),
-                            customRow(
-                              controller: columnsController,
-                              hintText: 'Columns',
-                              icon: Icons.view_column,
-                              intialValue: columns.toString(),
-                            ),
-                            customRow(
-                              controller: rowsController,
-                              hintText: 'Rows',
-                              icon: Icons.view_list,
-                              intialValue: rows.toString(),
-                            ),
-                            customRow(
-                              controller: pathController,
-                              hintText: 'Excel File Path',
-                              icon: Icons.file_open,
-                              intialValue: path,
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                final errors = await saveSettingsToSharedPreferences(
-                                  nameController.text,
-                                  columnsController.text,
-                                  rowsController.text,
-                                  pathController.text,
-                                );
+                      return pathAsyncvalue.when(
+                          data: (path) {
+                            return Scaffold(
+                              appBar: AppBar(
+                                title: const Text('Settings'),
+                                centerTitle: true,
+                              ),
+                              body: Column(
+                                children: [
+                                  customRow(
+                                    controller: nameController,
+                                    hintText: 'Name',
+                                    icon: Icons.person,
+                                    intialValue: name,
+                                  ),
+                                  customRow(
+                                    controller: columnsController,
+                                    hintText: 'Columns',
+                                    icon: Icons.view_column,
+                                    intialValue: columns.toString(),
+                                  ),
+                                  customRow(
+                                    controller: rowsController,
+                                    hintText: 'Rows',
+                                    icon: Icons.view_list,
+                                    intialValue: rows.toString(),
+                                  ),
+                                  customRow(
+                                    controller: pathController,
+                                    hintText: 'Excel File Path',
+                                    icon: Icons.file_open,
+                                    intialValue: path,
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      final errors = await saveSettingsToSharedPreferences(
+                                        nameController.text,
+                                        columnsController.text,
+                                        rowsController.text,
+                                        pathController.text,
+                                      );
 
-                                if (errors.isEmpty) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Settings Saved'),
-                                      ),
-                                    );
-                                  }
-                                  ref.refresh(nameProvider);
-                                  ref.refresh(columnsProvider);
-                                  ref.refresh(rowsProvider);
-                                  ref.refresh(storedMaterialProvider);
-                                  if (context.mounted) {
-                                    Navigator.of(context).pop();
-                                  }
-                                } else {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(errors.join('\n')),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                              child: const Text('Save'),
-                            ),
-                          ],
-                        ),
-                      );
+                                      if (errors.isEmpty) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Settings Saved'),
+                                            ),
+                                          );
+                                        }
+                                        ref.refresh(nameProvider);
+                                        ref.refresh(columnsProvider);
+                                        ref.refresh(rowsProvider);
+                                        ref.refresh(storedMaterialProvider);
+                                        if (context.mounted) {
+                                          Navigator.of(context).pop();
+                                        }
+                                      } else {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(errors.join('\n')),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    child: const Text('Save'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          error: (e, _) => Center(
+                                child: Text(e.toString()),
+                              ),
+                          loading: () => const Center(
+                                child: CircularProgressIndicator(),
+                              ));
                     },
                     error: (error, stackTrace) => Center(
                           child: Text(error.toString()),

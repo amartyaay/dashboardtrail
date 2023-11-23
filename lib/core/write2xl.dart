@@ -8,8 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Import the path provider package
-
 // Define the function
 Future<bool> writeExcel({
   required BuildContext context,
@@ -21,6 +19,7 @@ Future<bool> writeExcel({
   required String binAddress,
 }) async {
   try {
+    if (requestTo.isEmpty) requestTo = 'Warehouse';
     final prefs = await SharedPreferences.getInstance();
     final path = prefs.getString('xlPath');
     if (path == null || path.isEmpty) throw Exception('Excel File path is Null');

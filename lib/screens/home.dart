@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:dashboardtrail/core/providers/shared_pref.dart';
+import 'package:dashboardtrail/core/providers/xl_list_provider.dart';
 import 'package:dashboardtrail/screens/check_requests.dart';
 import 'package:dashboardtrail/screens/settings.dart';
 import 'package:dashboardtrail/widgets/scrollabel_widget.dart';
@@ -23,7 +25,17 @@ class HomePage extends HookConsumerWidget {
             return rowsAsyncValue.when(
               data: (rows) {
                 return ref.watch(storedMaterialProvider).when(data: (storedMaterial) {
+                  // List<Map<String, dynamic>> materialList = [];
+                  // if (xlList != null) {
+                  //   for (int i = 0; i < xlList.length; i++) {
+                  //     if (xlList[i]['Production Operator'].toString().toLowerCase() ==
+                  //         name!.toLowerCase()) {
+                  //       materialList.add(xlList[i]);
+                  //     }
+                  //   }
+                  // }
                   log('printing stored material list -> $storedMaterial');
+
                   if (name != null && name.isNotEmpty) {
                     return Scaffold(
                       appBar: AppBar(
@@ -33,9 +45,11 @@ class HomePage extends HookConsumerWidget {
                           IconButton(
                             icon: const Icon(Icons.settings),
                             onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                              );
+                              Timer(const Duration(seconds: 1), () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                                );
+                              });
                             },
                           ),
                           Padding(
@@ -44,11 +58,13 @@ class HomePage extends HookConsumerWidget {
                           )),
                           TextButton(
                             onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const RequestsScreen(),
-                                ),
-                              );
+                              Timer(
+                                  const Duration(seconds: 2),
+                                  () => Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => const RequestsScreen(),
+                                        ),
+                                      ));
                             },
                             child: const Text(
                               'Requests',
@@ -64,7 +80,7 @@ class HomePage extends HookConsumerWidget {
                     return const SettingsScreen();
                   }
                 }, error: (error, stackTrace) {
-                  return Center(child: Text(error.toString()));
+                  return buildError(error, context);
                 }, loading: () {
                   return const Center(child: CircularProgressIndicator());
                 });
@@ -73,7 +89,7 @@ class HomePage extends HookConsumerWidget {
                 return const Center(child: CircularProgressIndicator());
               },
               error: (error, stackTrace) {
-                return Center(child: Text(error.toString()));
+                return buildError(error, context);
               },
             );
           },
@@ -81,7 +97,7 @@ class HomePage extends HookConsumerWidget {
             return const Center(child: CircularProgressIndicator());
           },
           error: (error, stackTrace) {
-            return Center(child: Text(error.toString()));
+            return buildError(error, context);
           },
         );
       },
@@ -89,8 +105,28 @@ class HomePage extends HookConsumerWidget {
         return const Center(child: CircularProgressIndicator());
       },
       error: (error, stackTrace) {
-        return Center(child: Text(error.toString()));
+        return buildError(error, context);
       },
     );
   }
+}
+
+Widget buildError(Object e, BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(title: const Text('Error')),
+    body: Column(
+      children: [
+        Text(e.toString()),
+        const SizedBox(height: 5),
+        const Text('Several Request Made to Excel file Simultanously'),
+        const SizedBox(height: 5),
+        IconButton(
+            onPressed: () {
+              Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (context) => const HomePage()));
+            },
+            icon: const Icon(Icons.home_filled))
+      ],
+    ),
+  );
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dashboardtrail/core/providers/shared_pref.dart';
 import 'package:dashboardtrail/core/providers/xl_list_provider.dart';
 import 'package:dashboardtrail/core/write2xl.dart';
+import 'package:dashboardtrail/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -10,12 +11,15 @@ class RequestsScreen extends HookConsumerWidget {
   const RequestsScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    Timer.periodic(const Duration(minutes: 30), (Timer t) {
+      ref.refresh(xlListProvider);
+    });
     return ref.watch(xlListProvider).when(
         data: (requests) => ref.watch(nameProvider).when(
             data: (operatorName) => buildScaffold(context, ref, requests ?? [], operatorName ?? ''),
-            error: (e, _) => buildError(e),
+            error: (e, _) => buildError(e, context),
             loading: () => buildLoadingIndicator()),
-        error: (e, _) => buildError(e),
+        error: (e, _) => buildError(e, context),
         loading: () => buildLoadingIndicator());
   }
 
@@ -27,16 +31,19 @@ class RequestsScreen extends HookConsumerWidget {
     }
     print(requests);
     return Scaffold(
-      appBar: buildAppBar(),
+      appBar: buildAppBar(ref),
       body: buildBody(context, ref, requests, operatorName),
     );
   }
 
   // A method that returns an AppBar widget with a title
-  PreferredSizeWidget buildAppBar() {
+  PreferredSizeWidget buildAppBar(WidgetRef ref) {
     return AppBar(
       centerTitle: true,
       title: const Text('Requests'),
+      actions: [
+        ElevatedButton(onPressed: () => ref.refresh(xlListProvider), child: const Text('Refresh')),
+      ],
     );
   }
 
@@ -48,8 +55,14 @@ class RequestsScreen extends HookConsumerWidget {
       itemBuilder: (context, index) {
         final request = requests[index];
         // Get the data for the current item
+
         return (request['Production Operator'].toString().toLowerCase() ==
-                operatorName.toString().toLowerCase())
+                    operatorName.toString().toLowerCase() &&
+                ((request['Status'].toString().toLowerCase() != 'Completed'.toLowerCase() &&
+                        request['Status'].toString().toLowerCase() != 'Cancelled'.toLowerCase()) ||
+                    DateTime.now()
+                            .difference(DateTime.parse(request['Date Generated'].toString())) <
+                        const Duration(minutes: 30)))
             ? buildRequestCard(context, ref, request)
             : const SizedBox(
                 height: 0,
@@ -127,9 +140,25 @@ class RequestsScreen extends HookConsumerWidget {
   }
 
   // A method that returns a Center widget with a Text widget showing an error message
-  Widget buildError(Object e) {
-    return Center(
-      child: Text(e.toString()),
+  Widget buildError(Object e, BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Error')),
+      body: Column(
+        children: [
+          Text(e.toString()),
+          const SizedBox(
+            height: 5,
+          ),
+          const Text('Several Request Made to Excel file simultaneously'),
+          const SizedBox(height: 5),
+          IconButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .pushReplacement(MaterialPageRoute(builder: (context) => const HomePage()));
+              },
+              icon: const Icon(Icons.home_filled))
+        ],
+      ),
     );
   }
 }

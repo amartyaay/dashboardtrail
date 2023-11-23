@@ -137,13 +137,8 @@ class GridTileWidget extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Flexible(
-                    child: buildRequestButton(
-                        context,
-                        ref,
-                        disbaleRequestButton,
-                        materialNumber,
-                        binAddress,
-                        'Request'), // Call the method with 'Request' as the request type
+                    child: buildRequestButton(context, ref, disbaleRequestButton, materialNumber,
+                        binAddress, 'Normal'), // Call the method with 'Request' as the request type
                   ),
                   Flexible(
                     child: buildLinkButton(
@@ -188,7 +183,9 @@ class GridTileWidget extends HookConsumerWidget {
               }
             },
       child: Text(
-        requestType, // Use the request type as the button text
+        requestType == 'Normal'
+            ? 'Request'
+            : requestType, // Use the request type as the button text
         softWrap: false,
         overflow: TextOverflow.fade,
         maxLines: 1,

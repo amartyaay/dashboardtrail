@@ -97,6 +97,17 @@ class SettingsScreen extends HookConsumerWidget {
                                     },
                                     child: const Text('Save'),
                                   ),
+                                  ElevatedButton(
+                                      onPressed: () async {
+                                        final prefs = await SharedPreferences.getInstance();
+                                        prefs.clear();
+                                        ref.refresh(nameProvider);
+                                        ref.refresh(xlPathProviderProvider);
+                                        ref.refresh(columnsProvider);
+                                        ref.refresh(rowsProvider);
+                                        ref.refresh(storedMaterialProvider);
+                                      },
+                                      child: const Text('Delete all settings')),
                                 ],
                               ),
                             );

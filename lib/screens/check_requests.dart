@@ -11,9 +11,6 @@ class RequestsScreen extends HookConsumerWidget {
   const RequestsScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Timer.periodic(const Duration(minutes: 30), (Timer t) {
-      ref.refresh(xlListProvider);
-    });
     return ref.watch(xlListProvider).when(
         data: (requests) => ref.watch(nameProvider).when(
             data: (operatorName) => buildScaffold(context, ref, requests ?? [], operatorName ?? ''),
@@ -26,10 +23,10 @@ class RequestsScreen extends HookConsumerWidget {
   // A method that returns a Scaffold widget with an app bar and a body
   Widget buildScaffold(BuildContext context, WidgetRef ref, List<Map<String, dynamic>> requests,
       String operatorName) {
-    if (requests.isEmpty) {
-      return const SizedBox();
-    }
-    print(requests);
+    // if (requests.isEmpty) {
+    //   return const SizedBox();
+    // }
+    // print(requests);
     return Scaffold(
       appBar: buildAppBar(ref),
       body: buildBody(context, ref, requests, operatorName),

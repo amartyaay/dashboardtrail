@@ -3,6 +3,9 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dashboardtrail/core/db/material_list.dart';
+import 'package:dashboardtrail/core/providers/shared_pref.dart';
+import 'package:dashboardtrail/screens/settings.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Map<String, dynamic> getMaterialDataFromStoredList(List<String>? storedMaterial, int index) {
@@ -20,7 +23,7 @@ Map<String, dynamic> getMaterialDataFromStoredList(List<String>? storedMaterial,
 }
 
 File getImgFile(Map map) {
-  const imgPath = "assets/media/";
+  const imgPath = "media/";
   List<String> imageExtensions = ['jpg', 'jpeg', 'png'];
 
   File? file;
@@ -40,8 +43,23 @@ File getImgFile(Map map) {
   return File('$imgPath/default.png');
 }
 
-Future<bool> linkBtn(
-    int index, Map map, List<String>? storedList, String number, int rows, int columns) async {
+Future<bool> linkBtn(int index, Map map, List<String>? storedList, String number, int rows,
+    int columns, BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  final jsonPath = prefs.getString('jsonPath');
+  if (jsonPath == null) {
+    if (context.mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const SettingsScreen()),
+      );
+    }
+    return false;
+  }
+  String jsonContent = File(jsonPath).readAsStringSync();
+  final materialListJSON = json.decode(jsonContent);
+
+  final materialList = materialListJSON['materials'];
+
   if (materialList.containsKey(number)) {
     try {
       storedList![index] = jsonEncode({"number": number});

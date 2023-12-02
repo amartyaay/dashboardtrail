@@ -29,3 +29,7 @@ final xlPathProviderProvider = FutureProvider<String?>((ref) async {
   final prefs = await ref.watch(sharedPreferencesProvider.future);
   return prefs.getString('xlPath');
 });
+final jsonPathProvider = FutureProvider<String?>((ref) async {
+  final prefs = await ref.watch(sharedPreferencesProvider.future);
+  return prefs.getString('jsonPath');
+});

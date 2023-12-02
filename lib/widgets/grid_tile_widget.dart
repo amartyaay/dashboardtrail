@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:dashboardtrail/core/providers/xl_list_provider.dart';
 import 'package:dashboardtrail/widgets/get_details_from_Addres.dart';
 import 'package:dashboardtrail/widgets/snackbar_widget.dart';
+import 'package:dashboardtrail/widgets/textstyle_responsive.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -159,6 +161,8 @@ class GridTileWidget extends HookConsumerWidget {
   Widget buildRequestButton(BuildContext context, WidgetRef ref, ValueNotifier<bool> buttonState,
       String materialNumber, String binAddress, String requestType) {
     return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+          backgroundColor: getRequestButtonColor(requestType, buttonState.value)),
       onPressed: buttonState.value
           ? null
           : () async {
@@ -187,10 +191,13 @@ class GridTileWidget extends HookConsumerWidget {
             ? 'Request'
             : requestType, // Use the request type as the button text
         softWrap: false,
-        overflow: TextOverflow.fade,
+        overflow: TextOverflow.clip,
         maxLines: 1,
         style: TextStyle(
-          color: buttonState.value ? Colors.grey : null,
+          color: buttonState.value ? Colors.grey : Colors.black,
+          fontSize: MediaQuery.of(context).size.width < 512
+              ? MediaQuery.of(context).size.width / 60
+              : null,
         ),
       ),
     );
@@ -200,6 +207,9 @@ class GridTileWidget extends HookConsumerWidget {
   Widget buildLinkButton(
       BuildContext context, WidgetRef ref, TextEditingController numberController) {
     return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.yellow,
+      ),
       onPressed: () async {
         bool saveStatus = await linkBtn(
           index,
@@ -208,6 +218,7 @@ class GridTileWidget extends HookConsumerWidget {
           numberController.text,
           rows,
           columns,
+          context,
         );
         if (saveStatus) ref.refresh(storedMaterialProvider);
         if (context.mounted) {
@@ -223,11 +234,16 @@ class GridTileWidget extends HookConsumerWidget {
           );
         }
       },
-      child: const Text(
-        'Link',
-        softWrap: false,
-        overflow: TextOverflow.fade,
-        maxLines: 1,
+      child: Container(
+        decoration: const BoxDecoration(),
+        // color: Colors.yellowAccent,
+        child: const Text(
+          'Link',
+          softWrap: false,
+          overflow: TextOverflow.clip,
+          maxLines: 1,
+          style: TextStyle(color: Colors.black),
+        ),
       ),
     );
   }
@@ -245,4 +261,10 @@ class GridTileWidget extends HookConsumerWidget {
       child: Text(e.toString()),
     );
   }
+}
+
+Color getRequestButtonColor(String type, bool buttonStateValue) {
+  if (type == 'Normal') return Colors.lightGreen.shade300;
+  if (type == 'Urgent') return Colors.red.shade300;
+  return Colors.blue.shade300;
 }

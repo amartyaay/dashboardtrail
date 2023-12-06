@@ -1,14 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:dashboardtrail/core/providers/xl_list_provider.dart';
+import 'package:dashboardtrail/screens/settings.dart';
 import 'package:dashboardtrail/widgets/get_details_from_Addres.dart';
 import 'package:dashboardtrail/widgets/snackbar_widget.dart';
 import 'package:dashboardtrail/widgets/textstyle_responsive.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-import 'package:dashboardtrail/core/db/material_list.dart';
+// import 'package:dashboardtrail/core/db/material_list.dart';
 import 'package:dashboardtrail/core/material_utils.dart';
 import 'package:dashboardtrail/core/providers/shared_pref.dart';
 import 'package:dashboardtrail/core/write2xl.dart';
@@ -60,101 +62,125 @@ class GridTileWidget extends HookConsumerWidget {
         ((index % columns) + 1).toString();
     map.isNotEmpty ? numberController.text = map['number'] : numberController.text = '';
     String materialNumber = numberController.text;
-    String materialName = map.isNotEmpty
-        ? materialList[map['number']]!['description'] ?? 'Material Name'
-        : 'Material Name';
+    return ref.watch(jsonPathProvider).when(
+        data: (jsonPath) {
+          if (jsonPath == null) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => const SettingsScreen()));
+            return const SizedBox();
+          }
+          String jsonContent = File(jsonPath).readAsStringSync();
+          final materialListJSON = json.decode(jsonContent);
 
-    // Return early if there is no data
-    if (data.isEmpty) {
-      return const SizedBox();
-    }
+          final materialList = materialListJSON['materials'];
+          String materialName = map.isNotEmpty
+              ? materialList[map['number']]!['description'] ?? 'Material Name'
+              : 'Material Name';
 
-    print(data);
+          // Return early if there is no data
+          if (data.isEmpty) {
+            return const SizedBox();
+          }
 
-    // Use the original layout for larger screens
-    return Card(
-      margin: const EdgeInsets.all(8),
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Stack(
-              alignment: AlignmentDirectional.topStart,
+          print(data);
+
+          // Use the original layout for larger screens
+          return Card(
+            margin: const EdgeInsets.all(8),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                    image: map.isNotEmpty
-                        ? DecorationImage(
-                            image: FileImage(imgFile),
-                            fit: BoxFit.cover,
-                          )
-                        : const DecorationImage(
-                            image: AssetImage('assets/default1.jpg'),
-                            fit: BoxFit.cover,
+                Expanded(
+                  child: Stack(
+                    alignment: AlignmentDirectional.topStart,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
                           ),
+                          image: map.isNotEmpty
+                              ? DecorationImage(
+                                  image: FileImage(imgFile),
+                                  fit: BoxFit.cover,
+                                )
+                              : const DecorationImage(
+                                  image: AssetImage('assets/default1.jpg'),
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                      ),
+                      Text(
+                        binAddress,
+                        style: TextStyle(backgroundColor: Colors.teal.shade100),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        child: Text(
+                          materialName,
+                          style: TextStyle(
+                            backgroundColor: Colors.teal.shade100,
+                            overflow: TextOverflow.fade,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  binAddress,
-                  style: TextStyle(backgroundColor: Colors.teal.shade100),
-                ),
-                Positioned(
-                  bottom: 0,
-                  child: Text(
-                    materialName,
-                    style: TextStyle(
-                      backgroundColor: Colors.teal.shade100,
-                      overflow: TextOverflow.fade,
+                Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.05,
+                    child: TextField(
+                      controller: numberController,
+                      decoration: const InputDecoration(
+                        hintText: 'Material Number',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
                 ),
+                Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Flexible(
+                          child: buildRequestButton(
+                              context,
+                              ref,
+                              disbaleRequestButton,
+                              materialNumber,
+                              binAddress,
+                              'Normal'), // Call the method with 'Request' as the request type
+                        ),
+                        Flexible(
+                          child: buildLinkButton(context, ref,
+                              numberController), // Use a method to build the link button
+                        ),
+                        Flexible(
+                          child: buildRequestButton(
+                              context,
+                              ref,
+                              disbaleUrgentButton,
+                              materialNumber,
+                              binAddress,
+                              'Urgent'), // Call the method with 'Urgent' as the request type
+                        ),
+                      ],
+                    )),
               ],
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(4),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.05,
-              child: TextField(
-                controller: numberController,
-                decoration: const InputDecoration(
-                  hintText: 'Material Number',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-              padding: const EdgeInsets.all(4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Flexible(
-                    child: buildRequestButton(context, ref, disbaleRequestButton, materialNumber,
-                        binAddress, 'Normal'), // Call the method with 'Request' as the request type
-                  ),
-                  Flexible(
-                    child: buildLinkButton(
-                        context, ref, numberController), // Use a method to build the link button
-                  ),
-                  Flexible(
-                    child: buildRequestButton(context, ref, disbaleUrgentButton, materialNumber,
-                        binAddress, 'Urgent'), // Call the method with 'Urgent' as the request type
-                  ),
-                ],
-              )),
-        ],
-      ),
-    );
+          );
+        },
+        error: (e, s) => buildError(e),
+        loading: () => buildLoadingIndicator());
   }
 
   // A method that returns an ElevatedButton widget for requesting a material

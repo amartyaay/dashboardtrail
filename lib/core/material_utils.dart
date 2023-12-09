@@ -1,9 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
-import 'package:dashboardtrail/core/db/material_list.dart';
-import 'package:dashboardtrail/core/providers/shared_pref.dart';
 import 'package:dashboardtrail/screens/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

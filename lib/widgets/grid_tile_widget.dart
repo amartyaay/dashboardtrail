@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
+import 'dart:developer';
 
 import 'package:dashboardtrail/core/providers/xl_list_provider.dart';
 import 'package:dashboardtrail/screens/settings.dart';
-import 'package:dashboardtrail/widgets/get_details_from_Addres.dart';
+import 'package:dashboardtrail/widgets/get_details_from_addres.dart';
 import 'package:dashboardtrail/widgets/snackbar_widget.dart';
-import 'package:dashboardtrail/widgets/textstyle_responsive.dart';
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -82,7 +82,7 @@ class GridTileWidget extends HookConsumerWidget {
             return const SizedBox();
           }
 
-          print(data);
+          log(data.toString());
 
           // Use the original layout for larger screens
           return Card(

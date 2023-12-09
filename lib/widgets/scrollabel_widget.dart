@@ -1,15 +1,9 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-import 'package:dashboardtrail/core/db/material_list.dart';
 import 'package:dashboardtrail/core/material_utils.dart';
-import 'package:dashboardtrail/core/providers/shared_pref.dart';
-import 'package:dashboardtrail/core/write2xl.dart';
 import 'package:dashboardtrail/widgets/grid_tile_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ScrollableGridWidget extends HookConsumerWidget {
   final int columns;

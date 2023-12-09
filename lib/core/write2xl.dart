@@ -1,7 +1,8 @@
 // Import the excel package
+import 'dart:developer';
 import 'dart:io';
 import 'package:dashboardtrail/core/db/material_list.dart';
-import 'package:dashboardtrail/widgets/get_details_from_Addres.dart';
+import 'package:dashboardtrail/widgets/get_details_from_addres.dart';
 import 'package:dashboardtrail/widgets/snackbar_widget.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,7 @@ Future<bool> writeExcel({
     final path = prefs.getString('xlPath');
     if (path == null || path.isEmpty) throw Exception('Excel File path is Null');
     // Declare a variable to store the Excel document
-    print(path);
+    log(path);
     Excel excel;
 
     // Check if the file exists
@@ -106,7 +107,7 @@ Future<bool> editExcel({
   try {
     final prefs = await SharedPreferences.getInstance();
     final path = prefs.getString('xlPath');
-    print(path);
+    log(path.toString());
 
     if (path == null || path.isEmpty) throw Exception('Excel File path is Null');
     // Declare a variable to store the Excel document
@@ -161,7 +162,7 @@ Future<bool> editExcel({
     }
     return true;
   } catch (e) {
-    print(e.toString());
+    log(e.toString());
     if (context.mounted) showSnackBar(context, e.toString(), Colors.red);
     return false;
   }

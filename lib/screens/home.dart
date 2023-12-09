@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:dashboardtrail/core/providers/shared_pref.dart';
-import 'package:dashboardtrail/core/providers/xl_list_provider.dart';
 import 'package:dashboardtrail/screens/check_requests.dart';
 import 'package:dashboardtrail/screens/settings.dart';
 import 'package:dashboardtrail/widgets/scrollabel_widget.dart';
